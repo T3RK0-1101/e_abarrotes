@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abarrotes Dos Hermanos</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- ===== AUTH SCREENS ===== -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-bg">
+    <div class="auth-pattern"></div>
+  </div>
+  <div class="auth-container">
+    <div class="auth-brand">
+      <img src="logo3.png" style="width:100px;height:100px;object-fit:contain;display:block;margin:0 auto 1rem auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3));" />
+      <h1>Abarrotes<br/><span>Dos Hermanos</span></h1>
+      <p>Tu mercado de confianza</p>
+    </div>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Iniciar Sesión</button>
+      <button class="tab-btn" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-panel" class="auth-panel active">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary full" onclick="handleLogin()">Entrar →</button>
+    </div>
+
+    <!-- REGISTER FORM — solo clientes públicamente -->
+    <div id="register-panel" class="auth-panel">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-nombre" placeholder="Juan García" />
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tucorreo@ejemplo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pass" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary full" onclick="handleRegister()">Crear cuenta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app-screen" class="screen">
+
+  <!-- app-body: sidebar + main en fila -->
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <img src="logo2.png" class="brand-icon-sm" style="width:36px;height:36px;object-fit:contain;" />
+        <span>Dos Hermanos</span>
+      </div>
+
+      <!-- CLIENT NAV -->
+      <ul class="nav-list" id="nav-cliente">
+        <li><button class="nav-btn active" onclick="showSection('tienda')"><span class="nav-icon">🏪</span> Tienda</button></li>
+        <li><button class="nav-btn" onclick="showSection('carrito')"><span class="nav-icon">🛒</span> Carrito <span id="cart-badge" class="badge hidden">0</span></button></li>
+        <li><button class="nav-btn" onclick="showSection('mis-pedidos')"><span class="nav-icon">📦</span> Mis Pedidos</button></li>
+        <li><button class="nav-btn" onclick="showSection('mi-perfil')"><span class="nav-icon">👤</span> Mi Perfil</button></li>
+      </ul>
+
+      <!-- ADMIN NAV -->
+      <ul class="nav-list hidden" id="nav-admin">
+        <li><button class="nav-btn active" onclick="showSection('admin-productos')"><span class="nav-icon">📦</span> Productos</button></li>
+        <li><button class="nav-btn" onclick="showSection('admin-categorias')"><span class="nav-icon">🏷️</span> Categorías</button></li>
+        <li><button class="nav-btn" onclick="showSection('admin-pedidos')"><span class="nav-icon">🚚</span> Pedidos</button></li>
+        <li><button class="nav-btn" onclick="showSection('admin-usuarios')"><span class="nav-icon">👥</span> Usuarios</button></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-info" id="sidebar-user">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div>
+            <div class="user-name" id="sidebar-name">---</div>
+            <div class="user-rol" id="sidebar-rol">---</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">Salir</button>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- ===== TIENDA ===== -->
+      <section id="section-tienda" class="content-section active">
+        <div class="section-header">
+          <h2>Nuestra Tienda</h2>
+          <div class="filter-bar">
+            <input type="text" id="search-productos" placeholder="🔍 Buscar producto..." oninput="filtrarProductos()" />
+            <select id="filter-categoria" onchange="filtrarProductos()">
+              <option value="">Todas las categorías</option>
+            </select>
+          </div>
+        </div>
+        <div class="products-grid" id="products-grid">
+          <div class="loading-state">Cargando productos...</div>
+        </div>
+      </section>
+
+      <!-- ===== CARRITO ===== -->
+      <section id="section-carrito" class="content-section">
+        <div class="section-header">
+          <h2>Mi Carrito</h2>
+        </div>
+        <div class="cart-layout">
+          <div class="cart-items" id="cart-items-list">
+            <div class="empty-state">🛒 Tu carrito está vacío</div>
+          </div>
+          <div class="cart-summary">
+            <h3>Resumen del pedido</h3>
+            <div class="summary-row"><span>Subtotal:</span><span id="cart-subtotal">$0.00</span></div>
+            <div class="summary-row total"><span>Total:</span><span id="cart-total">$0.00</span></div>
+            <div class="form-group" style="margin-top:1rem;">
+              <label>Dirección de entrega</label>
+              <select id="select-direccion">
+                <option value="">-- Seleccionar dirección --</option>
+              </select>
+            </div>
+            <button class="btn-primary full" onclick="realizarPedido()" style="margin-top:1rem;">Realizar Pedido →</button>
+            <button class="btn-outline full" onclick="showSection('mi-perfil')" style="margin-top:.5rem;">+ Agregar dirección</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== MIS PEDIDOS ===== -->
+      <section id="section-mis-pedidos" class="content-section">
+        <div class="section-header">
+          <h2>Mis Pedidos</h2>
+        </div>
+        <div id="mis-pedidos-list" class="pedidos-list">
+          <div class="loading-state">Cargando pedidos...</div>
+        </div>
+      </section>
+
+      <!-- ===== MI PERFIL ===== -->
+      <section id="section-mi-perfil" class="content-section">
+        <div class="section-header">
+          <h2>Mi Perfil</h2>
+        </div>
+        <div class="perfil-layout">
+          <div class="perfil-card">
+            <h3>Mis Direcciones</h3>
+            <div id="mis-direcciones-list" class="direcciones-list"></div>
+            <button class="btn-outline" onclick="showModal('modal-direccion')">+ Nueva dirección</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ADMIN: PRODUCTOS ===== -->
+      <section id="section-admin-productos" class="content-section">
+        <div class="section-header">
+          <h2>Gestión de Productos</h2>
+          <button class="btn-primary" onclick="abrirModalProducto()">+ Agregar Producto</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>Imagen</th><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="admin-productos-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ADMIN: CATEGORÍAS ===== -->
+      <section id="section-admin-categorias" class="content-section">
+        <div class="section-header">
+          <h2>Categorías</h2>
+          <button class="btn-primary" onclick="showModal('modal-categoria')">+ Nueva Categoría</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Nombre</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="admin-categorias-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ADMIN: PEDIDOS ===== -->
+      <section id="section-admin-pedidos" class="content-section">
+        <div class="section-header">
+          <h2>Todos los Pedidos</h2>
+        </div>
+        <div id="admin-pedidos-list" class="pedidos-list"></div>
+      </section>
+
+      <!-- ===== ADMIN: USUARIOS ===== -->
+      <section id="section-admin-usuarios" class="content-section">
+        <div class="section-header">
+          <h2>Usuarios Registrados</h2>
+          <button class="btn-primary" onclick="showModal('modal-crear-admin')">+ Crear Admin</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th></tr>
+            </thead>
+            <tbody id="admin-usuarios-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- cierra app-body -->
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="logo3.png" style="width:28px;height:28px;object-fit:contain;opacity:.85;" />
+        Abarrotes Dos Hermanos®
+      </div>
+      <div class="footer-links">
+        <span>📞 +52 965 122 63 12</span>
+        <span>✉️ 2021pjg13@gmail.com</span>
+        <span>© 2025 Marca Registrada</span>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- cierra app-screen -->
+
+<!-- ===== MODALES ===== -->
+
+<!-- Modal Producto — con campo de imagen -->
+<div id="modal-producto" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-producto-title">Agregar Producto</h3>
+      <button class="modal-close" onclick="closeModal('modal-producto')">✕</button>
+    </div>
+    <input type="hidden" id="prod-id" />
+    <div class="form-group"><label>Nombre</label><input type="text" id="prod-nombre" /></div>
+    <div class="form-group"><label>Precio ($)</label><input type="number" id="prod-precio" step="0.01" /></div>
+    <div class="form-group"><label>Stock</label><input type="number" id="prod-stock" /></div>
+    <div class="form-group">
+      <label>Categoría</label>
+      <select id="prod-categoria"></select>
+    </div>
+    <div class="form-group">
+      <label>Imagen del producto</label>
+      <div class="img-upload-area" onclick="document.getElementById('prod-imagen-input').click()">
+        <input type="file" id="prod-imagen-input" accept="image/*" style="display:none" onchange="previewImagen(this)" />
+        <img id="prod-imagen-preview" class="img-upload-preview" src="" alt="preview" />
+        <div class="img-upload-placeholder" id="prod-imagen-placeholder">
+          <span>📷</span>
+          Haz clic para subir una imagen
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary full" onclick="guardarProducto()">Guardar →</button>
+  </div>
+</div>
+
+<!-- Modal Categoría -->
+<div id="modal-categoria" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-cat-title">Nueva Categoría</h3>
+      <button class="modal-close" onclick="closeModal('modal-categoria')">✕</button>
+    </div>
+    <input type="hidden" id="cat-id" />
+    <div class="form-group"><label>Nombre</label><input type="text" id="cat-nombre" /></div>
+    <button class="btn-primary full" onclick="guardarCategoria()">Guardar →</button>
+  </div>
+</div>
+
+<!-- Modal Dirección -->
+<div id="modal-direccion" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nueva Dirección</h3>
+      <button class="modal-close" onclick="closeModal('modal-direccion')">✕</button>
+    </div>
+    <div class="form-group"><label>Calle</label><input type="text" id="dir-calle" /></div>
+    <div class="form-group"><label>Colonia</label><input type="text" id="dir-colonia" /></div>
+    <div class="form-group"><label>Ciudad</label><input type="text" id="dir-ciudad" /></div>
+    <div class="form-group"><label>Estado</label><input type="text" id="dir-estado" /></div>
+    <div class="form-group"><label>Código Postal</label><input type="text" id="dir-cp" /></div>
+    <div class="form-group"><label>Referencia</label><input type="text" id="dir-ref" /></div>
+    <button class="btn-primary full" onclick="guardarDireccion()">Guardar →</button>
+  </div>
+</div>
+
+<!-- Modal Detalle Pedido -->
+<div id="modal-pedido-detalle" class="modal-overlay hidden">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h3 id="modal-pedido-titulo">Detalle del Pedido</h3>
+      <button class="modal-close" onclick="closeModal('modal-pedido-detalle')">✕</button>
+    </div>
+    <div id="modal-pedido-contenido"></div>
+    <div id="modal-pedido-estado-actions" class="hidden" style="margin-top:1.5rem;">
+      <label>Cambiar estado:</label>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;">
+        <button class="estado-btn" onclick="cambiarEstado('pendiente')">Pendiente</button>
+        <button class="estado-btn" onclick="cambiarEstado('pagado')">Pagado</button>
+        <button class="estado-btn" onclick="cambiarEstado('enviado')">Enviado</button>
+        <button class="estado-btn" onclick="cambiarEstado('entregado')">Entregado</button>
+        <button class="estado-btn danger" onclick="cambiarEstado('cancelado')">Cancelado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Admin (solo desde panel admin) -->
+<div id="modal-crear-admin" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Crear nuevo Admin</h3>
+      <button class="modal-close" onclick="closeModal('modal-crear-admin')">✕</button>
+    </div>
+    <div class="form-group"><label>Nombre completo</label><input type="text" id="admin-nombre" placeholder="María López" /></div>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" id="admin-email" placeholder="admin@ejemplo.com" /></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" id="admin-pass" placeholder="••••••••" /></div>
+    <button class="btn-primary full" onclick="crearAdmin()">Crear Admin →</button>
+  </div>
+</div>
+
+<!-- Modal Información de Pago -->
+<div id="modal-pago" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💳 Información de Pago</h3>
+      <button class="modal-close" onclick="closeModal('modal-pago')">✕</button>
+    </div>
+    <p style="color:var(--slate);font-size:.9rem;margin-bottom:.5rem;">
+      Tu pedido fue registrado. Realiza tu transferencia a la siguiente cuenta para confirmar el pago:
+    </p>
+    <div style="background:var(--slate-light);border-radius:var(--radius);padding:1.25rem;display:flex;flex-direction:column;gap:.75rem;">
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;">Beneficiario</div>
+        <div style="font-size:1rem;font-weight:600;margin-top:.2rem;">Pablo Jimenez Gumeta</div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;">Número de Tarjeta</div>
+        <div style="font-size:1rem;font-weight:600;letter-spacing:.1em;margin-top:.2rem;">5428 7851 9841 2180</div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;">CLABE</div>
+        <div style="font-size:1rem;font-weight:600;letter-spacing:.05em;margin-top:.2rem;">722969015083668488</div>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:var(--slate);text-align:center;">
+      Una vez realizado el pago, tu pedido será procesado. 🎉
+    </p>
+    <button class="btn-primary full" onclick="closeModal('modal-pago')">Entendido →</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
