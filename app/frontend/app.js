@@ -285,7 +285,7 @@ function renderProducts(productos) {
   }
   grid.innerHTML = productos.map((p, i) => {
     const catNombre = p.categoria?.nombre || '';
-    const imgSrc = getImagenProducto(p.id);
+    const imgSrc = p.imagen_url ? `${API}${p.imagen_url}` : null;
     const imgHTML = imgSrc
       ? `<img src="${imgSrc}" alt="${p.nombre}" style="width:100%;height:100%;object-fit:cover;" />`
       : '🛒';
@@ -356,7 +356,7 @@ function renderCarrito() {
   list.innerHTML = state.carrito.map((item, idx) => {
     const subtotal = item.producto.precio * item.cantidad;
     total += subtotal;
-    const imgSrc = getImagenProducto(item.producto.id);
+    const imgSrc = item.producto.imagen_url ? `${API}${item.producto.imagen_url}` : null;
     const imgHTML = imgSrc
       ? `<img src="${imgSrc}" alt="${item.producto.nombre}" style="width:100%;height:100%;object-fit:cover;" />`
       : '🛒';
@@ -559,7 +559,7 @@ async function loadAdminProductos() {
     state.productos = productos;
     const tbody = document.getElementById('admin-productos-body');
     tbody.innerHTML = productos.map(p => {
-      const imgSrc = getImagenProducto(p.id);
+      const imgSrc = p.imagen_url ? `${API}${p.imagen_url}` : null;
       const thumb = imgSrc
         ? `<div class="table-thumb"><img src="${imgSrc}" alt="${p.nombre}" /></div>`
         : `<div class="table-thumb">🛒</div>`;
@@ -623,7 +623,9 @@ async function guardarProducto() {
     stock: parseInt(document.getElementById('prod-stock').value),
     categoria_id: parseInt(document.getElementById('prod-categoria').value),
   };
-  if (!body.nombre || isNaN(body.precio) || isNaN(body.stock)) return showToast('Completa todos los campos', 'error');
+  if (!body.nombre || isNaN(body.precio) || isNaN(body.stock)) {
+    return showToast('Completa todos los campos', 'error');
+  }
 
   try {
     let productoId;
@@ -637,10 +639,15 @@ async function guardarProducto() {
       showToast('Producto creado ✅', 'success');
     }
 
-    // Guardar imagen si se subió una
-    const imgData = getImagenDelModal();
-    if (imgData) {
-      guardarImagenLocal(productoId, imgData);
+    // Subir imagen si se seleccionó una
+    const fileInput = document.getElementById('prod-imagen-input');
+    if (fileInput.files.length > 0) {
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      await fetch(`${API}/productos/${productoId}/imagen`, {
+        method: 'POST',
+        body: formData,
+      });
     }
 
     closeModal('modal-producto');

@@ -1,8 +1,11 @@
 # app/controllers/productos.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models import models, schemas
+import shutil
+import os
 
 router = APIRouter(prefix="/productos", tags=["productos"])
 
@@ -74,3 +77,25 @@ def actualizar_producto(producto_id: int, producto: schemas.ProductoCreate, db: 
     db.commit()
     db.refresh(existente)
     return existente
+
+@router.post("/{producto_id}/imagen")
+def subir_imagen(producto_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    carpeta = "app/static/imagenes"
+    os.makedirs(carpeta, exist_ok=True)
+    
+    extension = file.filename.split(".")[-1]
+    nombre_archivo = f"producto_{producto_id}.{extension}"
+    ruta = f"{carpeta}/{nombre_archivo}"
+    
+    with open(ruta, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    producto.imagen_url = f"/static/imagenes/{nombre_archivo}"
+    db.commit()
+    db.refresh(producto)
+    
+    return {"imagen_url": producto.imagen_url}

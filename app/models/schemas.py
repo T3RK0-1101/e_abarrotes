@@ -70,6 +70,7 @@ class ProductoCreate(ProductoBase):
 
 class Producto(ProductoBase):
     id: int
+    imagen_url: Optional[str] = None
     categoria: Optional[Categoria]
 
     class Config:

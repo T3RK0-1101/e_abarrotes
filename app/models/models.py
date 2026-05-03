@@ -51,6 +51,7 @@ class Producto(Base):
     precio = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False)
     categoria_id = Column(Integer, ForeignKey("categorias.id"))
+    imagen_url = Column(String(255), nullable=True)  # <-- NUEVA
 
     categoria = relationship("Categoria", back_populates="productos")
     detalles = relationship("DetallePedido", back_populates="producto")
